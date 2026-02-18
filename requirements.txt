@@ -1,0 +1,7 @@
+pyserial
+Pillow
+ultralytics
+adafruit-circuitpython-neopixel
+adafruit-blinka
+scikit-optimize
+# picamera2 # Usually installed via apt on Raspberry Pi OS
