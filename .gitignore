@@ -5,12 +5,3 @@ __pycache__/
 venv/
 .env
 
-# Project specific
-captures/
-optimizer.pkl
-best.pt
-yolo26n.pt
-
-# OS
-.DS_Store
-Thumbs.db
