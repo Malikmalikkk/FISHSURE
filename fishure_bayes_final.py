@@ -26,7 +26,7 @@ import pwmio
 # --- CONFIGURATION ---
 WIDTH, HEIGHT = 640, 480
 PIXEL_PIN = board.D18
-NUM_PIXELS = 10
+NUM_PIXELS = 24
 SERIAL_PORT = "/dev/ttyUSB0"
 BAUD_RATE = 921600
 YOLO_MODEL_PATH = "best.pt"
@@ -157,10 +157,9 @@ def objective(red, green, blue, freq):
             jpeg_size = len(jpeg_bytes)
             ser.write(b"\xAA\x66") # Header
             ser.write(struct.pack("<I", jpeg_size)) # Size
-            ser.write(struct.pack("B", fish_count)) # Fish Count (1 byte)
             ser.write(jpeg_bytes) # Payload
             ser.flush()
-            print(f"[PI] Sent image ({jpeg_size} bytes) with Fish Count: {fish_count}")
+            print(f"[PI] Sent image ({jpeg_size} bytes)")
         except Exception as e:
             print(f"[PI] Serial Send Error: {e}")
 

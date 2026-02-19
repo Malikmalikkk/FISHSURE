@@ -21,7 +21,6 @@ struct StartPacket {
   uint16_t frameId;
   uint32_t jpegSize;
   uint16_t numChunks;
-  uint8_t fishCount; // New field
 };
 
 struct ConfigPacket {
@@ -123,8 +122,8 @@ void setup() {
 }
 
 void loop() {
-  // Wait for Pi header: 0xAA 0x66 + uint32 size + uint8 fishCount (7 bytes)
-  if (Serial.available() < 7) return;
+  // Wait for Pi header: 0xAA 0x66 + uint32 size
+  if (Serial.available() < 6) return;
 
   uint8_t h1 = Serial.read();
   uint8_t h2 = Serial.read();
@@ -132,8 +131,6 @@ void loop() {
 
   uint32_t jpegSize = 0;
   if (Serial.readBytes((uint8_t*)&jpegSize, 4) != 4) return;
-
-  uint8_t fishCount = Serial.read();
 
   if (jpegSize < 200 || jpegSize > MAX_JPEG) {
     Serial.printf("[TX4] invalid jpegSize=%lu\n", (unsigned long)jpegSize);
@@ -162,7 +159,7 @@ void loop() {
                 frameId, (unsigned long)jpegSize, numChunks);
 
   // START
-  StartPacket sp{PKT_START, frameId, jpegSize, numChunks, fishCount};
+  StartPacket sp{PKT_START, frameId, jpegSize, numChunks};
   if (!sendNow((uint8_t*)&sp, sizeof(sp))) {
     Serial.println("[TX4] START send failed");
     free(jpegBuf);
