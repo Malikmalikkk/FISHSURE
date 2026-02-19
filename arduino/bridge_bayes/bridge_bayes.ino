@@ -127,11 +127,17 @@ void loop() {
 
   uint8_t h1 = Serial.read();
   uint8_t h2 = Serial.read();
-  if (h1 != 0xAA || h2 != 0x66) return;
+  if (h1 != 0xAA || h2 != 0x66) {
+    // If not header, ignore or print (could be echo)
+    // Serial.printf("[TX4] Header mismatch: %02X %02X\n", h1, h2);
+    return;
+  }
 
   uint32_t jpegSize = 0;
-  if (Serial.readBytes((uint8_t*)&jpegSize, 4) != 4) return;
-
+  if (Serial.readBytes((uint8_t*)&jpegSize, 4) != 4) {
+    Serial.println("[TX4] size read fail");
+    return;
+  }
   if (jpegSize < 200 || jpegSize > MAX_JPEG) {
     Serial.printf("[TX4] invalid jpegSize=%lu\n", (unsigned long)jpegSize);
     return;
