@@ -31,6 +31,7 @@ SERIAL_PORT = "/dev/ttyUSB0"
 BAUD_RATE = 921600
 YOLO_MODEL_PATH = "best.pt"
 OPTIMIZER_SAVE_PATH = "optimizer.pkl"
+CONF_THRESHOLD = 0.25  # Model confidence threshold (0.0 to 1.0)
 
 # Bayesian Opt Settings
 N_INITIAL_POINTS = 10
@@ -110,7 +111,8 @@ def objective(red, green, blue, freq):
     fish_count = 0
     jpeg_bytes = None
     if frame is not None:
-        results = model(frame, verbose=False)
+        # Run inference with confidence threshold
+        results = model(frame, verbose=False, conf=CONF_THRESHOLD)
         for r in results:
             for c in r.boxes.cls:
                 # Use name check for safety
