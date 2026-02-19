@@ -56,6 +56,8 @@ ser = None
 try:
     if os.path.exists(SERIAL_PORT):
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.1)
+        ser.reset_input_buffer()
+        ser.reset_output_buffer()
         print(f"[PI] Connected to Serial port: {SERIAL_PORT}")
     else:
         print(f"[PI] Serial port {SERIAL_PORT} not found. Running in simulated serial mode.")
@@ -211,8 +213,8 @@ def main():
                     pickle.dump(opt, f)
             else:
                 # 3. STATIC MODE: Just apply values and capture
-                # In static mode, we don't tell the optimizer anything
-                objective(static_r, static_g, static_b, static_freq)
+                # We must pass a list [r, g, b, f] because of the @use_named_args decorator
+                objective([static_r, static_g, static_b, static_freq])
                 time.sleep(1) # Pacing in static mode
 
     except KeyboardInterrupt:
