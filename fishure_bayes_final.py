@@ -15,6 +15,10 @@ from skopt import Optimizer
 from skopt.space import Integer
 from skopt.utils import use_named_args
 
+# --- V3 WIDE & COMPATIBILITY CHECKS ---
+if np.version.version.startswith('2.'):
+    print("[WARNING] NumPy 2.x detected. If you hit 'Failed to initialize NumPy' error, please run: pip install 'numpy<2.0'")
+
 import board
 import neopixel
 import pwmio
@@ -25,7 +29,7 @@ PIXEL_PIN = board.D18
 NUM_PIXELS = 10
 SERIAL_PORT = "/dev/ttyUSB0"
 BAUD_RATE = 921600
-YOLO_MODEL_PATH = "yolo26n.pt"
+YOLO_MODEL_PATH = "best.pt"
 OPTIMIZER_SAVE_PATH = "optimizer.pkl"
 
 # Bayesian Opt Settings
@@ -41,10 +45,15 @@ SEARCH_SPACE = [
 pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, brightness=1.0, auto_write=False)
 audio_pwm = pwmio.PWMOut(board.D12, duty_cycle=0, frequency=440, variable_frequency=True)
 
+ser = None
 try:
-    ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.1)
-except:
-    ser = None
+    if os.path.exists(SERIAL_PORT):
+        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.1)
+        print(f"[PI] Connected to Serial port: {SERIAL_PORT}")
+    else:
+        print(f"[PI] Serial port {SERIAL_PORT} not found. Running in simulated serial mode.")
+except Exception as e:
+    print(f"[PI] Serial Error: {e}")
 
 print("[PI] Loading YOLO model...")
 model = YOLO(YOLO_MODEL_PATH)
@@ -62,14 +71,16 @@ else:
 
 def capture_pi_cam():
     try:
-        cmd = ["rpicam-still", "-t", "5", "-n", "--stdout", "--width", str(WIDTH), "--height", str(HEIGHT), "-e", "jpg", "--immediate"]
+        # -t 500 allows autofocus on Pi Cam v3 to settle
+        cmd = ["rpicam-still", "-t", "500", "-n", "--stdout", "--width", str(WIDTH), "--height", str(HEIGHT), "-e", "jpg", "--immediate"]
         result = subprocess.run(cmd, capture_output=True, check=True)
         nparr = np.frombuffer(result.stdout, np.uint8)
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if frame is not None:
             return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         return None
-    except:
+    except Exception as e:
+        print(f"[PI] Camera Error: {e}")
         return None
 
 @use_named_args(dimensions)
