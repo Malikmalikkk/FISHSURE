@@ -72,15 +72,20 @@ else:
 def capture_pi_cam():
     try:
         # -t 500 allows autofocus on Pi Cam v3 to settle
-        cmd = ["rpicam-still", "-t", "500", "-n", "--stdout", "--width", str(WIDTH), "--height", str(HEIGHT), "-e", "jpg", "--immediate"]
+        cmd = ["rpicam-still", "-t", "500", "-n", "--stdout", "--width", str(WIDTH), "--height", str(HEIGHT), "-e", "jpg"]
         result = subprocess.run(cmd, capture_output=True, check=True)
         nparr = np.frombuffer(result.stdout, np.uint8)
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if frame is not None:
             return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         return None
+    except subprocess.CalledProcessError as e:
+        print(f"[PI] Camera Command Failed (status {e.returncode})")
+        if e.stderr:
+            print(f"[PI] Camera Stderr: {e.stderr.decode()}")
+        return None
     except Exception as e:
-        print(f"[PI] Camera Error: {e}")
+        print(f"[PI] Camera Exception: {e}")
         return None
 
 @use_named_args(dimensions)
