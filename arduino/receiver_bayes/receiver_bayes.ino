@@ -33,7 +33,10 @@ struct StartPacket {
   uint16_t frameId;
   uint32_t jpegSize;
   uint16_t numChunks;
+  uint8_t fishCount; // New field
 };
+
+uint8_t currFishCount = 0; // State to hold last received fish count
 
 struct ConfigPacket {
   uint8_t type; // PKT_CONFIG
@@ -148,6 +151,7 @@ void startFrame(const StartPacket &sp) {
   jpegSize = sp.jpegSize;
   numChunks = sp.numChunks;
   frameId = sp.frameId;
+  currFishCount = sp.fishCount; // Capture the fish in this photo
 
   jpegBuf = (uint8_t*)malloc(jpegSize);
   chunkMap = (uint8_t*)calloc(numChunks, 1);
@@ -164,7 +168,7 @@ void startFrame(const StartPacket &sp) {
 void decodeAndDisplay() {
   Serial.println("[RX4] ✅ Frame complete -> decoding");
   
-  catchCount++;
+  catchCount += currFishCount; // Add the actual fish count, not just 1
 
   // Clear background (optional since JPEG usually covers it)
   // tft.fillScreen(TFT_BLACK); 
