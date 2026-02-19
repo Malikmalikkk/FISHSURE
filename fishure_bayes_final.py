@@ -134,13 +134,15 @@ def objective(red, green, blue, freq):
         img.save(buf, format="JPEG", quality=60)
         jpeg_bytes = buf.getvalue()
 
-        # Save local copy of the same image sent to Serial
-        os.makedirs(SAVE_FOLDER, exist_ok=True)
-        filename = f"trial_{trial_counter}_fish_{fish_count}.jpg"
-        with open(os.path.join(SAVE_FOLDER, filename), "wb") as f:
-            f.write(jpeg_bytes)
+        # Save local copy ONLY if fish are detected
+        if fish_count > 0:
+            os.makedirs(SAVE_FOLDER, exist_ok=True)
+            filename = f"trial_{trial_counter}_fish_{fish_count}.jpg"
+            with open(os.path.join(SAVE_FOLDER, filename), "wb") as f:
+                f.write(jpeg_bytes)
     
-    print(f"[BAYES] Trial {trial_counter}: RGB=({red},{green},{blue}) Freq={freq}Hz -> Fish={fish_count} (Saved locally)")
+        status_msg = "Saved locally" if fish_count > 0 else "Skipped local save"
+        print(f"[BAYES] Trial {trial_counter}: RGB=({red},{green},{blue}) Freq={freq}Hz -> Fish={fish_count} ({status_msg})")
 
     # Send to Serial (matching fishurepi.py protocol)
     if ser and jpeg_bytes:
