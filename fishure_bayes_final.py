@@ -43,6 +43,11 @@ SEARCH_SPACE = [
     Integer(500, 5000, name='freq')
 ]
 
+# --- MODE & STATIC GLOBALS ---
+current_mode = "AUTO"  # "AUTO" or "STATIC"
+static_r, static_g, static_b = 255, 255, 255
+static_freq = 1000
+
 # --- HARDWARE SETUP ---
 pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, brightness=1.0, auto_write=False)
 audio_pwm = pwmio.PWMOut(board.D12, duty_cycle=0, frequency=440, variable_frequency=True)
@@ -159,24 +164,55 @@ def objective(red, green, blue, freq):
     trial_counter += 1
     return -fish_count # Negate because skopt minimizes
 
+def handle_serial_commands():
+    global current_mode, static_r, static_g, static_b, static_freq
+    if ser and ser.in_waiting > 0:
+        try:
+            line = ser.readline().decode('utf-8', errors='ignore').strip()
+            if line.startswith("CMD:"):
+                print(f"[PI] Received Command: {line}")
+                parts = line.split(":")
+                cmd_type = parts[1]
+                
+                if cmd_type == "MODE":
+                    current_mode = parts[2]
+                    print(f"[PI] Switching to {current_mode} mode")
+                elif cmd_type == "COLOR":
+                    vals = parts[2].split(",")
+                    static_r, static_g, static_b = int(vals[0]), int(vals[1]), int(vals[2])
+                    print(f"[PI] Static Color updated: {static_r},{static_g},{static_b}")
+                elif cmd_type == "FREQ":
+                    static_freq = int(parts[2])
+                    print(f"[PI] Static Freq updated: {static_freq}Hz")
+        except Exception as e:
+            print(f"[PI] Serial Parse Error: {e}")
+
 trial_counter = 0
 
 def main():
-    print("[PI] Starting Bayes Opt (Subprocess Camera Mode)...")
+    print("[PI] Starting Bayes Opt + Serial Listener...")
     try:
         while True:
-            # 1. Get next suggestion
-            next_x = opt.ask()
-            
-            # 2. Evaluate
-            f_val = objective(next_x)
-            
-            # 3. Report back
-            opt.tell(next_x, f_val)
-            
-            # 4. Save state
-            with open(OPTIMIZER_SAVE_PATH, "wb") as f:
-                pickle.dump(opt, f)
+            # 1. Check for commands from ESP32
+            handle_serial_commands()
+
+            if current_mode == "AUTO":
+                # 2. EVALUATE NEXT BAYES STEP
+                next_x = opt.ask()
+                
+                # evaluate (handles hardware + detection + serial tx)
+                f_val = objective(next_x) 
+                
+                opt.tell(next_x, f_val)
+                
+                # Save state
+                with open(OPTIMIZER_SAVE_PATH, "wb") as f:
+                    pickle.dump(opt, f)
+            else:
+                # 3. STATIC MODE: Just apply values and capture
+                # In static mode, we don't tell the optimizer anything
+                objective(static_r, static_g, static_b, static_freq)
+                time.sleep(1) # Pacing in static mode
 
     except KeyboardInterrupt:
         print("\n[PI] Stopping...")
