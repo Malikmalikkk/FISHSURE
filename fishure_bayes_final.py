@@ -120,8 +120,12 @@ def objective(red, green, blue, freq):
                 if model.names[int(c)].lower() == "fish":
                     fish_count += 1
         
-        # Convert to JPEG for Serial Transmission with Overlay
-        img = Image.fromarray(frame)
+        # Get annotated frame with bounding boxes
+        annotated_frame = results[0].plot()  # Returns BGR
+        annotated_frame_rgb = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+        
+        # Convert to PIL for custom text overlay
+        img = Image.fromarray(annotated_frame_rgb)
         draw = ImageDraw.Draw(img)
         info_text = f"Trial: {trial_counter}\nFish: {fish_count}\nRGB: {red},{green},{blue}\nFreq: {freq}Hz"
         draw.text((10, 10), info_text, fill=(255, 0, 0))
