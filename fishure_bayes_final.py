@@ -32,6 +32,7 @@ BAUD_RATE = 921600
 YOLO_MODEL_PATH = "best.pt"
 OPTIMIZER_SAVE_PATH = "optimizer.pkl"
 CONF_THRESHOLD = 0.25  # Model confidence threshold (0.0 to 1.0)
+SAVE_FOLDER = "captures" # Folder to save detected images
 
 # Bayesian Opt Settings
 N_INITIAL_POINTS = 10
@@ -128,8 +129,14 @@ def objective(red, green, blue, freq):
         buf = io.BytesIO()
         img.save(buf, format="JPEG", quality=60)
         jpeg_bytes = buf.getvalue()
+
+        # Save local copy of the same image sent to Serial
+        os.makedirs(SAVE_FOLDER, exist_ok=True)
+        filename = f"trial_{trial_counter}_fish_{fish_count}.jpg"
+        with open(os.path.join(SAVE_FOLDER, filename), "wb") as f:
+            f.write(jpeg_bytes)
     
-    print(f"[BAYES] Trial {trial_counter}: RGB=({red},{green},{blue}) Freq={freq}Hz -> Fish={fish_count}")
+    print(f"[BAYES] Trial {trial_counter}: RGB=({red},{green},{blue}) Freq={freq}Hz -> Fish={fish_count} (Saved locally)")
 
     # Send to Serial (matching fishurepi.py protocol)
     if ser and jpeg_bytes:
