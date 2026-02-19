@@ -15,4 +15,3 @@ numpy<2.0
 # Note: For PyTorch on Raspberry Pi, it is recommended to install the CPU-only version:
 # pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 # sudo /home/fishsure/FISHSURE/venv/bin/python fishure_bayes_final.py
-#
