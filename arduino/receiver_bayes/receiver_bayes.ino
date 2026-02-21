@@ -72,8 +72,8 @@ uint8_t colors[][3] = {
 };
 
 // Static Freq cycle
-uint16_t staticFreqIdx = 2; // Default 1000Hz
-uint16_t frequencies[] = {200, 500, 1000, 2000, 5000};
+uint16_t staticFreqIdx = 2; // Default 100Hz
+uint16_t frequencies[] = {20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500};
 
 enum ValidMenu { MENU_NONE, MENU_CATCH, MENU_MODE, MENU_COLOR, MENU_FREQ };
 ValidMenu currentMenu = MENU_NONE;

@@ -40,7 +40,7 @@ SEARCH_SPACE = [
     Integer(0, 255, name='red'),
     Integer(0, 255, name='green'),
     Integer(0, 255, name='blue'),
-    Integer(500, 5000, name='freq')
+    Integer(20, 1500, name='freq')
 ]
 
 # --- MODE & STATIC GLOBALS ---
@@ -78,8 +78,8 @@ else:
 
 def capture_pi_cam():
     try:
-        # -t 500 allows autofocus on Pi Cam v3 to settle
-        cmd = ["rpicam-still", "-t", "500", "-n", "-o", "-", "--width", str(WIDTH), "--height", str(HEIGHT), "-e", "jpg"]
+        # -t 200 allows autofocus on Pi Cam v3 to settle quickly (reduced for speed)
+        cmd = ["rpicam-still", "-t", "200", "-n", "-o", "-", "--width", str(WIDTH), "--height", str(HEIGHT), "-e", "jpg"]
         result = subprocess.run(cmd, capture_output=True, check=True)
         
         if not result.stdout:
@@ -132,11 +132,28 @@ def objective(red, green, blue, freq):
         # Convert to PIL for custom text overlay
         img = Image.fromarray(annotated_frame_rgb)
         draw = ImageDraw.Draw(img)
+        
+        try:
+            # Try loading a standard Pi font for larger text
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 32)
+        except Exception:
+            try:
+                # Fallback for Windows
+                font = ImageFont.truetype("arial.ttf", 32)
+            except Exception:
+                # Fallback to default
+                font = ImageFont.load_default()
+
         info_text = f"Trial: {trial_counter}\nFish: {fish_count}\nRGB: {red},{green},{blue}\nFreq: {freq}Hz"
-        draw.text((10, 10), info_text, fill=(255, 0, 0))
+        # Add slight shadow for better readability
+        draw.text((12, 12), info_text, fill=(0, 0, 0), font=font)
+        draw.text((10, 10), info_text, fill=(255, 0, 0), font=font)
+        
+        # Resize the image to fit the receiver's TFT screen (480x320)
+        img = img.resize((480, 320), Image.Resampling.LANCZOS)
         
         buf = io.BytesIO()
-        img.save(buf, format="JPEG", quality=60)
+        img.save(buf, format="JPEG", quality=50) # Reduced quality for faster transmission
         jpeg_bytes = buf.getvalue()
 
         # Save local copy ONLY if fish are detected
