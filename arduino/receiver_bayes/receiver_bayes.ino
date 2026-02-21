@@ -177,6 +177,36 @@ void decodeAndDisplay() {
   // We assume the image might be smaller than 480x(320-UI_BAR_H)
   TJpgDec.drawJpg(0, UI_BAR_H, jpegBuf, jpegSize);
   
+  // Draw High Fish Count Warning Popup
+  if (currFishCount >= 5) {
+    int boxW = 360;
+    int boxH = 100;
+    int boxX = (SCREEN_W - boxW) / 2;
+    int boxY = UI_BAR_H + ((SCREEN_H - UI_BAR_H - boxH) / 2); // Centered vertically in the image area
+    
+    // Draw a prominent red box with a white border
+    tft.fillRoundRect(boxX, boxY, boxW, boxH, 10, TFT_RED);
+    tft.drawRoundRect(boxX, boxY, boxW, boxH, 10, TFT_WHITE);
+    tft.drawRoundRect(boxX+1, boxY+1, boxW-2, boxH-2, 9, TFT_WHITE); // Thicker border
+    
+    // Draw large alert text
+    tft.setTextColor(TFT_WHITE, TFT_RED);
+    
+    // Attempt larger text
+    tft.setTextSize(3);
+    tft.setCursor(boxX + 25, boxY + 20);
+    tft.print("5+ FISH DETECTED");
+    
+    tft.setTextSize(2);
+    tft.setTextColor(TFT_YELLOW, TFT_RED);
+    tft.setCursor(boxX + 65, boxY + 60);
+    tft.print("PULL THE NET NOW!");
+    
+    // Reset text properties for normal UI
+    tft.setTextSize(2);
+    tft.setTextColor(TFT_WHITE, 0x1084);
+  }
+
   drawUI();
   resetFrame();
 }
@@ -342,7 +372,7 @@ void loop() {
             changed = true;
         } else if (currentMenu == MENU_FREQ) {
             staticFreqIdx++;
-            if (staticFreqIdx >= 5) staticFreqIdx = 0;
+            if (staticFreqIdx >= 13) staticFreqIdx = 0;
             changed = true;
         }
 
