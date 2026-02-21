@@ -91,7 +91,7 @@ void resetFrame() {
 }
 
 void drawUI() {
-  // Premium dark bar with a subtle border
+  // dark bar with a subtle border
   tft.fillRect(0, 0, SCREEN_W, UI_BAR_H, 0x1084); // Dark grey/navy
   tft.drawFastHLine(0, UI_BAR_H - 1, SCREEN_W, TFT_DARKGREY);
   
@@ -168,13 +168,8 @@ void startFrame(const StartPacket &sp) {
 void decodeAndDisplay() {
   Serial.println("[RX4] ✅ Frame complete -> decoding");
   
-  catchCount += currFishCount; // Add the actual fish count, not just 1
+  catchCount += currFishCount;
 
-  // Clear background (optional since JPEG usually covers it)
-  // tft.fillScreen(TFT_BLACK); 
-
-  // Center the image if possible, but keep bar visible
-  // We assume the image might be smaller than 480x(320-UI_BAR_H)
   TJpgDec.drawJpg(0, UI_BAR_H, jpegBuf, jpegSize);
   
   // Draw High Fish Count Warning Popup
@@ -187,12 +182,11 @@ void decodeAndDisplay() {
     // Draw a prominent red box with a white border
     tft.fillRoundRect(boxX, boxY, boxW, boxH, 10, TFT_RED);
     tft.drawRoundRect(boxX, boxY, boxW, boxH, 10, TFT_WHITE);
-    tft.drawRoundRect(boxX+1, boxY+1, boxW-2, boxH-2, 9, TFT_WHITE); // Thicker border
+    tft.drawRoundRect(boxX+1, boxY+1, boxW-2, boxH-2, 9, TFT_WHITE);
     
     // Draw large alert text
     tft.setTextColor(TFT_WHITE, TFT_RED);
     
-    // Attempt larger text
     tft.setTextSize(3);
     tft.setCursor(boxX + 25, boxY + 20);
     tft.print("5+ FISH DETECTED");
