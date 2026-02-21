@@ -26,12 +26,12 @@ import pwmio
 # --- CONFIGURATION ---
 WIDTH, HEIGHT = 640, 480
 PIXEL_PIN = board.D18
-NUM_PIXELS = 10
+NUM_PIXELS = 24
 SERIAL_PORT = "/dev/ttyUSB0"
 BAUD_RATE = 921600
 YOLO_MODEL_PATH = "best.pt"
 OPTIMIZER_SAVE_PATH = "optimizer.pkl"
-CONF_THRESHOLD = 0.9  # Model confidence threshold (0.0 to 1.0)
+CONF_THRESHOLD = 0.6  # Model confidence threshold (0.0 to 1.0)
 SAVE_FOLDER = "captures" # Folder to save detected images
 
 # Bayesian Opt Settings
